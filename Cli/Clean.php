@@ -62,7 +62,7 @@ class Clean
 
         /* get sessions count */
         $total = $this->getSessionsCount();
-        $output->writeln("Total '$total' sessions is found in DB.");
+        $output->writeln("Total '$total' sessions are found in DB.");
         $current = 0;
         $limit = self::BATCH_LIMIT;
         $id = null;

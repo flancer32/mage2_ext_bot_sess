@@ -1,7 +1,12 @@
 # mage2_ext_bot_sess
-Magento2: prevent session creation for bots &amp; crawlers.
+Magento2: prevent session creation for search engines bots and crawlers.
 
+There is a [problem](https://magento.stackexchange.com/questions/18276/magento-generating-aprox-20-session-files-per-minute) with search engines bots and crawlers in Magento - new session is created for each request from the bots. So, there are a lot of "dead" sessions in DB/filesystem when any bot scans Magento pages - each page request creates new session. This module [prevents](https://github.com/flancer32/mage2_ext_bot_sess/blob/master/Plugin/Session/SessionManager.php#L29) session creation for search engines bots and crawlers.
 
+Also, there is a console command to clean up bots sessions from DB:
+```bash
+$ ./bin/magento fl32:botsess:clean
+```
 
 ## Install
 
