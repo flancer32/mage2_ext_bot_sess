@@ -1,0 +1,21 @@
+{
+  "name": "flancer32/mage2_ext_bot_sess",
+  "description": "Magento2: prevent session creation for bots & crawlers.",
+  "type": "magento2-module",
+  "homepage": "https://github.com/flancer32/mage2_ext_bot_sess",
+  "license": "GPL-3.0-only",
+  "authors": [
+    {
+      "name": "Alex Gusev", "email": "alex@flancer64.com"
+    }
+  ],
+  "require": {},
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Flancer32\\BotSess\\": ""
+    }
+  }
+}
