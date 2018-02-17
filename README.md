@@ -40,10 +40,12 @@ Then run these commands to completely uninstall `Flancer32_BotSess` module:
 ```bash
 $ cd ${DIR_MAGE_ROOT}   
 $ bin/magento module:uninstall Flancer32_BotSess
+$ composer remove flancer32/mage2_ext_bot_sess
 $ bin/magento setup:upgrade
 $ bin/magento setup:di:compile
 $ bin/magento setup:static-content:deploy
 $ bin/magento cache:clean
+$ # set filesystem permissions to your files
 ```
 
 Be patient, uninstall process (`bin/magento module:uninstall ...`) takes about 2-4 minutes. Remove `auth.json` file at the end:
