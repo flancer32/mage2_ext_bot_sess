@@ -7,4 +7,4 @@
 
 \Magento\Framework\Component\ComponentRegistrar::register(
     \Magento\Framework\Component\ComponentRegistrar::MODULE,
-    \Flancer32\CrossSells\Config::MODULE, __DIR__);
+    \Flancer32\BotSess\Config::MODULE, __DIR__);

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!-- Console command to clean up bot sessions from db -->
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="fl32_bot_sess_clean" xsi:type="object">Flancer32\BotSess\Cli\Clean</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Prevent new sessions opening for the bots -->
+    <type name="Magento\Framework\Session\SessionManager">
+        <plugin name="fl32_bot_sess_plugin"
+                type="Flancer32\BotSess\Plugin\Session\SessionManager"
+                sortOrder="100"
+                disabled="false"/>
+    </type>
+
+</config>
