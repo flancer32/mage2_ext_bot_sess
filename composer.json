@@ -15,7 +15,8 @@
       "registration.php"
     ],
     "psr-4": {
-      "Flancer32\\BotSess\\": ""
+      "Flancer32\\BotSess\\": "",
+      "Flancer32\\BotSess\\Test\\": "./test/"
     }
   }
 }
