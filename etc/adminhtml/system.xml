@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="web">
+            <group id="session">
+                <field id="bots_cleanup_delta"
+                       translate="label" type="text" sortOrder="1000" showInDefault="1"
+                       showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Bots Sessions Max Lifetime</label>
+                    <comment>Max lifetime for bots sessions (in sec.) before cleanup (default: 3600).</comment>
+                    <tooltip>Use 'http://.../fl32botsess/clean/files' to clean up session files.</tooltip>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
