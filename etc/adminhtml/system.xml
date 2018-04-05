@@ -4,9 +4,20 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="web">
-            <group id="session">
+            <group id="session_bots" translate="label"
+                   sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Bots Sessions Settings</label>
+                <field id="filter"
+                       translate="label" type="textarea" sortOrder="100" showInDefault="1"
+                       showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Bots Signatures</label>
+                    <comment>Parts of the User-Agent HTTP header which shows that session should not be created for this
+                        agent.
+                    </comment>
+                    <tooltip>All parts will be concatenated into one regex "/^alexa|^blitz\.io|...|yandex/i" to lookup for bots.</tooltip>
+                </field>
                 <field id="bots_cleanup_delta"
-                       translate="label" type="text" sortOrder="1000" showInDefault="1"
+                       translate="label" type="text" sortOrder="200" showInDefault="1"
                        showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Bots Sessions Max Lifetime</label>
                     <comment>Max lifetime for bots sessions (in sec.) before cleanup (default: 3600).</comment>

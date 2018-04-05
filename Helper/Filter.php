@@ -7,21 +7,27 @@
 namespace Flancer32\BotSess\Helper;
 
 /**
- * Module level helper.
+ * Filter for User-Agent HTTP header to get bots.
+ *
+ * Special thanks to David Farthing
+ * (https://magento.stackexchange.com/questions/18276/magento-generating-aprox-20-session-files-per-minute)
  */
-class Mod
+class Filter
 {
-    /**
-     * Thanks to David Farthing
-     * (https://magento.stackexchange.com/questions/18276/magento-generating-aprox-20-session-files-per-minute)
-     */
-    const BOT_REGEX = '/^alexa|^blitz\.io|bot|^browsermob|crawl|^curl|^facebookexternalhit|feed|google web preview|^ia_archiver|^java|jakarta|^load impact|^magespeedtest|monitor|nagios|^pinterest|postrank|slurp|spider|uptime|yandex/i';
-
-    /** @var bool cached isBot result based on HTTP var */
+    /** @var bool cached isBot result based on HTTP var (for current request) */
     private $cacheIsBot = null;
+    /**
+     * Regex with bots signatures.
+     *
+     * @var string
+     */
+    private $regex;
 
-    public function __construct()
+    public function __construct(
+        \Flancer32\BotSess\Helper\Config $hlpCfg
+    )
     {
+        $this->regex = $hlpCfg->getFilter();
         /** Analyze HTTP request var to cache isBot result */
         $userAgent = empty($_SERVER['HTTP_USER_AGENT']) ? null : $_SERVER['HTTP_USER_AGENT'];
         $this->cacheIsBot = $this->isBotAgentMatched($userAgent);
@@ -52,7 +58,7 @@ class Mod
      */
     private function isBotAgentMatched($agent)
     {
-        $result = !$agent || preg_match(self::BOT_REGEX, $agent);
+        $result = !$agent || preg_match($this->regex, $agent);
         return $result;
     }
 }

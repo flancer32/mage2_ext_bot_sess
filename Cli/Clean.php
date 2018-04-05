@@ -18,14 +18,14 @@ class Clean
 
     /** @var \Magento\Framework\DB\Adapter\AdapterInterface */
     private $conn;
-    /** @var \Flancer32\BotSess\Helper\Mod */
+    /** @var \Flancer32\BotSess\Helper\Filter */
     private $hlp;
     /** @var \Magento\Framework\App\ResourceConnection */
     private $resource;
 
     public function __construct(
         \Magento\Framework\App\ResourceConnection $resource,
-        \Flancer32\BotSess\Helper\Mod $hlp
+        \Flancer32\BotSess\Helper\Filter $hlp
     ) {
         parent::__construct(self::NAME);
         /* Symfony related config is performed from parent constructor */

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<config
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <web>
+            <session_bots>
+                <filter>^alexa
+^blitz\.io
+^browsermob
+^curl
+^facebookexternalhit
+^ia_archiver
+^java
+^load impact
+^magespeedtest
+^pinterest
+bot
+crawl
+feed
+google web preview
+jakarta
+monitor
+nagios
+postrank
+slurp
+spider
+uptime
+yandex</filter>
+                <bots_cleanup_delta>3600</bots_cleanup_delta>
+            </session_bots>
+        </web>
+    </default>
+</config>

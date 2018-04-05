@@ -25,6 +25,26 @@ class Config
     }
 
     /**
+     * Converts multiline configuration (^alexa\n^blitz\.io\n...yandex)
+     * into regex "/^alexa|^blitz\.io|...|yandex|/i" to filter bots.
+     *
+     * @return string
+     */
+    public function getFilter()
+    {
+        $lines = $this->scopeConfig->getValue('web/session_bots/filter');
+        $exploded = explode(PHP_EOL, $lines);
+        $result = '/';
+        foreach ($exploded as $item) {
+            $one = trim($item);
+            if ($one) $result .= $one . '|';
+        }
+        $len = strlen($result);
+        $result = substr($result, 0, $len - 1);
+        $result .= '/i';
+        return $result;
+    }
+    /**
      * Max lifetime for bots sessions (in sec.) before cleanup.
      *
      * @return bool

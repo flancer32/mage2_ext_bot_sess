@@ -11,11 +11,11 @@ namespace Flancer32\BotSess\Plugin\Session;
  */
 class SessionManager
 {
-    /** @var \Flancer32\BotSess\Helper\Mod */
+    /** @var \Flancer32\BotSess\Helper\Filter */
     private $hlp;
 
     public function __construct(
-        \Flancer32\BotSess\Helper\Mod $hlp
+        \Flancer32\BotSess\Helper\Filter $hlp
     ) {
         $this->hlp = $hlp;
     }
