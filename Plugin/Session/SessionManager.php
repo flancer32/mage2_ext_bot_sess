@@ -34,8 +34,8 @@ class SessionManager
             /* not bot - proceed with session start */
             $result = $proceed();
         } else {
-            $agent = $_SERVER['HTTP_USER_AGENT'];
-            $address = $_SERVER['REMOTE_ADDR'];
+            $agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'n/a';
+            $address = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'n/a';
             $this->logger->debug("Skip session for agent |$agent| from $address.");
         }
         return $result;
