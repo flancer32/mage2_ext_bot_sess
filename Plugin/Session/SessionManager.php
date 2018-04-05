@@ -13,10 +13,14 @@ class SessionManager
 {
     /** @var \Flancer32\BotSess\Helper\Filter */
     private $hlp;
+    /** @var \Flancer32\BotSess\Logger */
+    private $logger;
 
     public function __construct(
+        \Flancer32\BotSess\Logger $logger,
         \Flancer32\BotSess\Helper\Filter $hlp
     ) {
+        $this->logger = $logger;
         $this->hlp = $hlp;
     }
 
@@ -29,6 +33,10 @@ class SessionManager
         if (!$isBot) {
             /* not bot - proceed with session start */
             $result = $proceed();
+        } else {
+            $agent = $_SERVER['HTTP_USER_AGENT'];
+            $address = $_SERVER['REMOTE_ADDR'];
+            $this->logger->debug("Skip session for agent |$agent| from $address.");
         }
         return $result;
     }
