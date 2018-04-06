@@ -22,15 +22,20 @@ class Clean
     private $hlp;
     /** @var \Magento\Framework\App\ResourceConnection */
     private $resource;
-
+    /** @var \Flancer32\BotSess\Logger */
+    private $logger;
+    /** @var \Symfony\Component\Console\Output\OutputInterface set from execute() */
+    private $output;
     public function __construct(
         \Magento\Framework\App\ResourceConnection $resource,
+        \Flancer32\BotSess\Logger $logger,
         \Flancer32\BotSess\Helper\Filter $hlp
     ) {
         parent::__construct(self::NAME);
         /* Symfony related config is performed from parent constructor */
         $this->setDescription(self::DESC);
         $this->resource = $resource;
+        $this->logger = $logger;
         $this->conn = $resource->getConnection();
         $this->hlp = $hlp;
     }
@@ -53,19 +58,21 @@ class Clean
         \Symfony\Component\Console\Input\InputInterface $input,
         \Symfony\Component\Console\Output\OutputInterface $output
     ) {
+        $this->output = $output;
         /* perform operation */
         $name = self::NAME;
-        $output->writeln("Command '$name' is started.");
+        $this->log("Command '$name' is started.");
 
         /* start session to decode session data */
         session_start();
 
         /* get sessions count */
         $total = $this->getSessionsCount();
-        $output->writeln("Total '$total' sessions are found in DB.");
+        $this->log("Total '$total' sessions are found in DB.");
         $current = 0;
         $limit = self::BATCH_LIMIT;
         $id = null;
+        $agentSkipped = []; // not bot agents skipped in cleanup
         while ($current < $total) {
             /* get all sessions then process it in loop */
             $all = $this->getSessionsBatch($id, $limit);
@@ -88,6 +95,12 @@ class Clean
                             } else {
                                 $output->writeln("Cannot delete session '$id'.");
                             }
+                        } else {
+                            if (isset($agentSkipped[$agent])) {
+                                $agentSkipped[$agent]++;
+                            } else {
+                                $agentSkipped[$agent] = 1;
+                            }
                         }
                     }
                 } catch (\Throwable $e) {
@@ -95,7 +108,11 @@ class Clean
                 }
             }
         }
-        $output->writeln("Command '$name' is executed.");
+        arsort($agentSkipped);
+        foreach ($agentSkipped as $agentName => $count) {
+            $this->log("$count: $agentName");
+        }
+        $this->log("Command '$name' is executed.");
     }
 
     /**
@@ -118,6 +135,16 @@ class Clean
         return $result;
     }
 
+    /**
+     * Aggregator to log messages to console & log file.
+     *
+     * @param string $msg
+     */
+    private function log($msg)
+    {
+        $this->logger->debug($msg);
+        $this->output->writeln($msg);
+    }
     /**
      * Get total count of the all sessions from DB.
      *

@@ -11,7 +11,7 @@ class Logger
     extends \Monolog\Logger
 {
     const FILENAME = 'fl32.botsess.log';
-    const NAME = 'FL32BOTSESS';
+    const NAME = 'FL32BOTS';
 
     public function __construct()
     {
@@ -22,8 +22,8 @@ class Logger
 
     private function initFormatter()
     {
-        $dateFormat = "Ymd/His";
-        $msgFormat = "%datetime%-%channel%.%level_name% - %message%\n";
+        $dateFormat = "Y-m-d H:i:s";
+        $msgFormat = "%datetime%: %message%\n";
         $result = new \Monolog\Formatter\LineFormatter($msgFormat, $dateFormat);
         return $result;
     }
