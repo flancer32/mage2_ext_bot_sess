@@ -12,6 +12,7 @@ namespace Flancer32\BotSess\Cli;
 class Clean
     extends \Symfony\Component\Console\Command\Command
 {
+    /** Process DB sessions with batches to prevent freeze for other connections */
     const BATCH_LIMIT = 1000;
     const DESC = 'Clean crawlers/bots sessions existing in DB.';
     const NAME = 'fl32:botsess:clean';
@@ -19,7 +20,9 @@ class Clean
     /** @var \Magento\Framework\DB\Adapter\AdapterInterface */
     private $conn;
     /** @var \Flancer32\BotSess\Helper\Filter */
-    private $hlp;
+    private $hlpFilter;
+    /** @var \Flancer32\BotSess\Helper\Config */
+    private $hlpCfg;
     /** @var \Magento\Framework\App\ResourceConnection */
     private $resource;
     /** @var \Flancer32\BotSess\Logger */
@@ -29,7 +32,8 @@ class Clean
     public function __construct(
         \Magento\Framework\App\ResourceConnection $resource,
         \Flancer32\BotSess\Logger $logger,
-        \Flancer32\BotSess\Helper\Filter $hlp
+        \Flancer32\BotSess\Helper\Config $hlpCfg,
+        \Flancer32\BotSess\Helper\Filter $hlpFilter
     ) {
         parent::__construct(self::NAME);
         /* Symfony related config is performed from parent constructor */
@@ -37,7 +41,8 @@ class Clean
         $this->resource = $resource;
         $this->logger = $logger;
         $this->conn = $resource->getConnection();
-        $this->hlp = $hlp;
+        $this->hlpCfg = $hlpCfg;
+        $this->hlpFilter = $hlpFilter;
     }
 
     /**
@@ -68,34 +73,66 @@ class Clean
 
         /* get sessions count */
         $total = $this->getSessionsCount();
-        $this->log("Total '$total' sessions are found in DB.");
         $current = 0;
         $limit = self::BATCH_LIMIT;
         $id = null;
-        $agentSkipped = []; // not bot agents skipped in cleanup
+        $agentSkipped = [];     // not bot agents skipped in cleanup
+        $sessionsActive = 0;    // counter for active (or not expired inactive) sessions
+        $sessionsInactive = 0;  // counter for removed inactive sessions
+        $sessionsBots = 0;      // counter for bot sessions
+        $now = time();          // current time
+        $deltaMax = $this->hlpCfg->getBotsCleanupDelta();
         while ($current < $total) {
             /* get all sessions then process it in loop */
             $all = $this->getSessionsBatch($id, $limit);
             foreach ($all as $one) {
                 $current++;
                 $id = $one['session_id'];
+                $created = $one['session_expires']; // session creation time (???)
                 $data = $one['session_data'];
                 $decoded = base64_decode($data);
                 try {
                     session_decode($decoded);
                     if (isset($_SESSION['_session_validator_data']['http_user_agent'])) {
                         $agent = $_SESSION['_session_validator_data']['http_user_agent'];
-                        $isBot = $this->hlp->isBot($agent);
+                        $isBot = $this->hlpFilter->isBot($agent);
                         if ($isBot) {
                             /* remove bot session */
-                            $output->writeln("Session '$id' belongs to bot ($agent).");
+                            $this->log("Session '$id' belongs to bot ($agent).");
                             $deleted = $this->deleteSession($id);
                             if ($deleted == 1) {
-                                $output->writeln("Session '$id' is deleted.");
+                                $this->log("Session '$id' is deleted as bot.");
+                                $sessionsBots++;
                             } else {
-                                $output->writeln("Cannot delete session '$id'.");
+                                $this->logger->error("Cannot delete bot session '$id'.");
                             }
                         } else {
+                            /* human session, detect session age */
+                            $delta = $now - $created;
+                            if ($delta > $deltaMax) {
+                                /* session age is over then time delta for inactive customers */
+                                if (
+                                    isset($_SESSION['catalog']) &&
+                                    is_array($_SESSION['catalog']) &&
+                                    (count($_SESSION['catalog']) > 0) &&
+                                    isset($_SESSION['checkout']) &&
+                                    is_array($_SESSION['checkout']) &&
+                                    (count($_SESSION['checkout']) > 0)
+                                ) {
+                                    /* there are not empty catalog & checkout sections in the session */
+                                    $sessionsActive++;
+                                } else {
+                                    /* remove expired inactive session */
+                                    $this->log("Session '$id' belongs to inactive customer.");
+                                    $deleted = $this->deleteSession($id);
+                                    if ($deleted == 1) {
+                                        $this->log("Session '$id' is deleted as inactive.");
+                                        $sessionsInactive++;
+                                    } else {
+                                        $this->logger->error("Cannot delete inactive session '$id'.");
+                                    }
+                                }
+                            }
                             if (isset($agentSkipped[$agent])) {
                                 $agentSkipped[$agent]++;
                             } else {
@@ -104,14 +141,22 @@ class Clean
                         }
                     }
                 } catch (\Throwable $e) {
-                    $output->writeln($e->getMessage());
+                    $this->log($e->getMessage());
                 }
             }
         }
+
+        /** compose result */
         arsort($agentSkipped);
+        $sessionsSkipped = count($agentSkipped);
         foreach ($agentSkipped as $agentName => $count) {
             $this->log("$count: $agentName");
         }
+        $this->log("Total '$total' sessions are found in DB.");
+        $this->log("'$sessionsSkipped' sessions are not defined as bot's.");
+        $this->log("'$sessionsBots' sessions are deleted as bot's.");
+        $this->log("'$sessionsActive' sessions belong to active customers.");
+        $this->log("'$sessionsInactive' inactive customers sessions are deleted.");
         $this->log("Command '$name' is executed.");
     }
 
