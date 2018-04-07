@@ -10,17 +10,19 @@ namespace Flancer32\BotSess\Service\Clean\A;
 class Response
 {
     /** @var int total count of active sessions left in DB */
-    public $active;
+    public $active = 0;
+    /** @var int total count of admin sessions */
+    public $admins = 0;
     /** @var array Frequency for agents used in active sessions [agent => count] */
     public $agents = [];
     /** @var int total count of session with failures in processing */
-    public $failures;
+    public $failures = 0;
     /** @var int total count of inactive sessions removed from DB */
-    public $inactive;
+    public $removedInactive = 0;
     /** @var int session files that were removed (belongs to bots) */
-    public $removedBots;
+    public $removedBots = 0;
     /** @var int session files that can belongs to the customers */
-    public $skipped;
+    public $skipped = 0;
     /** @var int total count of session files processed */
-    public $total;
+    public $total = 0;
 }

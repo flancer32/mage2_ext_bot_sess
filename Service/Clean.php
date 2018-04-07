@@ -68,15 +68,23 @@ class Clean
                     $response->removedBots++;
                 } else {
                     $this->logger->error("Cannot delete bot session '$sessId'.");
+                    $response->failures++;
                 }
             } else {
-                /* human session, detect session age */
+                /* human session, save agents used by humans */
+                if (isset($response->agents[$agent])) {
+                    $response->agents[$agent]++;
+                } else {
+                    $response->agents[$agent] = 1;
+                }
                 if (
                     isset($sessData['admin']) &&
                     $sessData['admin'] == HSession::UNSERIALIZE_FAILURE
                 ) {
                     /* admins sessions are not unserialized, I don't know why */
+                    $response->admins++;
                 } else {
+                    /* does not an admin session, detect session age */
                     $delta = $now - $created;
                     if ($delta > $deltaMax) {
                         /* session age is over then time delta for inactive customers */
@@ -96,20 +104,19 @@ class Clean
                             $deleted = $this->deleteSession($sessId);
                             if ($deleted == 1) {
                                 $this->logger->debug("Session '$sessId' is deleted as inactive.");
-                                $response->inactive++;
+                                $response->removedInactive++;
                             } else {
                                 $this->logger->error("Cannot delete inactive session '$sessId'.");
+                                $response->failures++;
                             }
                         }
                     }
                 }
-                /* save agents used by humans */
-                if (isset($response->agents[$agent])) {
-                    $response->agents[$agent]++;
-                } else {
-                    $response->agents[$agent] = 1;
-                }
+
             }
+        } else {
+            /* this is not Magento session */
+            $response->failures++;
         }
     }
 
@@ -140,10 +147,6 @@ class Clean
         $current = 0;
         $limit = self::BATCH_LIMIT;
         $id = null;
-        $agentSkipped = [];     // not bot agents skipped in cleanup
-        $sessionsActive = 0;    // counter for active (or not expired inactive) sessions
-        $sessionsInactive = 0;  // counter for removed inactive sessions
-        $sessionsBots = 0;      // counter for bot sessions
         $now = time();          // current time
         $deltaMax = $this->hlpCfg->getBotsCleanupDelta();
 
@@ -163,18 +166,19 @@ class Clean
                     $this->analyzeSession($id, $session, $now, $created, $deltaMax, $result);
                 } catch (\Throwable $e) {
                     $this->logger->err("Session '$id':" . $e->getMessage());
-
+                    $result->failures++;
                 }
             }
         }
 
         /** compose result */
-        $result->active = $sessionsActive;
-        $result->inactive = $sessionsInactive;
+        $result->total = $total;
+//        $result->active = $sessionsActive;
+//        $result->inactive = $sessionsInactive;
 //        $result->failures = $failures;
 //        $result->removed = $removed;
-        $result->skipped = $agentSkipped;
-        $result->total = $total;
+//        $result->skipped = $agentSkipped;
+//        $result->total = $total;
         return $result;
     }
 
