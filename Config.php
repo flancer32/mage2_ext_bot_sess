@@ -10,7 +10,8 @@ namespace Flancer32\BotSess;
 
 class Config
 {
+    const ENTITY_SESSION = 'session';
+
     /** This module name. */
     const MODULE = 'Flancer32_BotSess';
-
 }
