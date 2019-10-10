@@ -53,10 +53,9 @@ class Clean
         $output->writeln("Total '{$resp->total}' sessions are found in DB.");
         $output->writeln("'{$resp->skipped}' sessions are not defined as bot's.");
         $output->writeln("'{$resp->removedBots}' sessions are deleted as bot's.");
-        $output->writeln("'{$resp->removedInactive}' sessions are deleted as inactive customers.");
+        $output->writeln("'{$resp->removedInactive}' sessions are deleted as inactive users.");
         $output->writeln("'{$resp->failures}' sessions have a failures during analyze..");
-        $output->writeln("'{$resp->active}' sessions belong to active customers.");
-        $output->writeln("'{$resp->admins}' sessions belong admins.");
+        $output->writeln("'{$resp->active}' sessions are belong to active users.");
         $output->writeln("Command '{$this->getName()}' is executed.");
     }
 

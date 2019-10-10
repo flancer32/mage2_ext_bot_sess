@@ -12,8 +12,10 @@ namespace Flancer32\BotSess\Helper;
  */
 class Config
 {
-
+    /* Default value if "web/session_bots/bots_cleanup_delta" configuration parameter is zero or less.  */
     const DEF_BOT_CLEANUP_DELTA = 3600;
+    /* Default value if "web/cookie/cookie_lifetime" configuration parameter is zero or less.  */
+    const DEF_COOKIE_LIFETIME = 3600;
 
     /** @var \Magento\Framework\App\Config\ScopeConfigInterface */
     private $scopeConfig;
@@ -22,6 +24,31 @@ class Config
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
     ) {
         $this->scopeConfig = $scopeConfig;
+    }
+
+    /**
+     * Max lifetime for bots sessions (in sec.) before cleanup.
+     *
+     * @return bool
+     */
+    public function getBotsCleanupDelta()
+    {
+        $result = $this->scopeConfig->getValue('web/session_bots/bots_cleanup_delta');
+        $result = filter_var($result, FILTER_VALIDATE_INT);
+        if ($result <= 0) {
+            $result = self::DEF_BOT_CLEANUP_DELTA;
+        }
+        return $result;
+    }
+
+    public function getCookieLifetime()
+    {
+        $result = $this->scopeConfig->getValue('web/cookie/cookie_lifetime');
+        $result = filter_var($result, FILTER_VALIDATE_INT);
+        if ($result <= 0) {
+            $result = self::DEF_BOT_CLEANUP_DELTA;
+        }
+        return $result;
     }
 
     /**
@@ -37,25 +64,13 @@ class Config
         $result = '/';
         foreach ($exploded as $item) {
             $one = trim($item);
-            if ($one) $result .= $one . '|';
+            if ($one) {
+                $result .= $one . '|';
+            }
         }
         $len = strlen($result);
         $result = substr($result, 0, $len - 1);
         $result .= '/i';
-        return $result;
-    }
-    /**
-     * Max lifetime for bots sessions (in sec.) before cleanup.
-     *
-     * @return bool
-     */
-    public function getBotsCleanupDelta()
-    {
-        $result = $this->scopeConfig->getValue('web/session/bots_cleanup_delta');
-        $result = filter_var($result, FILTER_VALIDATE_INT);
-        if ($result <= 0) {
-            $result = self::DEF_BOT_CLEANUP_DELTA;
-        }
         return $result;
     }
 

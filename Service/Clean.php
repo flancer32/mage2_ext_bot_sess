@@ -11,6 +11,9 @@ use Flancer32\BotSess\Helper\Session as HSession;
 use Flancer32\BotSess\Service\Clean\A\Request as ARequest;
 use Flancer32\BotSess\Service\Clean\A\Response as AResponse;
 
+/**
+ * Clean up user's expired sessions and all bot's sessions.
+ */
 class Clean
 {
     /** Process DB sessions with batches to prevent freeze for other connections */
@@ -51,16 +54,16 @@ class Clean
      * @param array $sessData
      * @param int $now
      * @param int $created
-     * @param int $deltaMax
+     * @param int $sessLifetime
      * @param AResponse $response
      */
-    private function analyzeSession($sessId, $sessData, $now, $created, $deltaMax, $response)
+    private function analyzeSession($sessId, $sessData, $now, $created, $sessLifetime, $response)
     {
         if (isset($sessData['_session_validator_data']['http_user_agent'])) {
             $agent = $sessData['_session_validator_data']['http_user_agent'];
             $isBot = $this->hlpFilter->isBot($agent);
             if ($isBot) {
-                /* remove bot session */
+                /* remove all bots sessions w/o lifetime excuses */
                 $this->logger->debug("Session '$sessId' belongs to bot ($agent).");
                 $deleted = $this->deleteSession($sessId);
                 if ($deleted == 1) {
@@ -77,40 +80,21 @@ class Clean
                 } else {
                     $response->agents[$agent] = 1;
                 }
-                if (
-                    isset($sessData['admin']) &&
-                    $sessData['admin'] == HSession::UNSERIALIZE_FAILURE
-                ) {
-                    /* admins sessions are not unserialized, I don't know why */
-                    $response->admins++;
-                } else {
-                    /* does not an admin session, detect session age */
-                    $delta = $now - $created;
-                    if ($delta > $deltaMax) {
-                        /* session age is over then time delta for inactive customers */
-                        if (
-                            isset($sessData['catalog']) &&
-                            is_array($sessData['catalog']) &&
-                            (count($sessData['catalog']) > 0) &&
-                            isset($sessData['checkout']) &&
-                            is_array($sessData['checkout']) &&
-                            (count($sessData['checkout']) > 0)
-                        ) {
-                            /* there are not empty catalog & checkout sections in the session */
-                            $response->active++;
-                        } else {
-                            /* remove expired inactive session */
-                            $this->logger->debug("Session '$sessId' belongs to inactive customer.");
-                            $deleted = $this->deleteSession($sessId);
-                            if ($deleted == 1) {
-                                $this->logger->debug("Session '$sessId' is deleted as inactive.");
-                                $response->removedInactive++;
-                            } else {
-                                $this->logger->error("Cannot delete inactive session '$sessId'.");
-                                $response->failures++;
-                            }
-                        }
+                /* analyze session data and remove expired sessions of users */
+                $delta = $now - $created;
+                if ($delta > $sessLifetime) {
+                    /* session age is over then time delta for inactive user, remove the session */
+                    $this->logger->debug("Session '$sessId' belongs to inactive user.");
+                    $deleted = $this->deleteSession($sessId);
+                    if ($deleted == 1) {
+                        $this->logger->debug("Session '$sessId' is deleted as inactive.");
+                        $response->removedInactive++;
+                    } else {
+                        $this->logger->error("Cannot delete inactive session '$sessId'.");
+                        $response->failures++;
                     }
+                } else {
+                    $response->active++;
                 }
 
             }
@@ -148,7 +132,7 @@ class Clean
         $limit = self::BATCH_LIMIT;
         $id = null;
         $now = time();          // current time
-        $deltaMax = $this->hlpCfg->getBotsCleanupDelta();
+        $sessLifetime = $this->hlpCfg->getCookieLifetime();
 
         /** perform processing */
         /* external loop to process all sessions by batches */
@@ -163,7 +147,7 @@ class Clean
                 $decoded = base64_decode($data);
                 try {
                     $session = $this->hlpSession->decode($decoded);
-                    $this->analyzeSession($id, $session, $now, $created, $deltaMax, $result);
+                    $this->analyzeSession($id, $session, $now, $created, $sessLifetime, $result);
                 } catch (\Throwable $e) {
                     $this->logger->err("Session '$id':" . $e->getMessage());
                     $result->failures++;
@@ -173,12 +157,6 @@ class Clean
 
         /** compose result */
         $result->total = $total;
-//        $result->active = $sessionsActive;
-//        $result->inactive = $sessionsInactive;
-//        $result->failures = $failures;
-//        $result->removed = $removed;
-//        $result->skipped = $agentSkipped;
-//        $result->total = $total;
         return $result;
     }
 

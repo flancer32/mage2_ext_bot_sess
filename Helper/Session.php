@@ -15,7 +15,8 @@ namespace Flancer32\BotSess\Helper;
  */
 class Session
 {
-    const UNSERIALIZE_FAILURE = 'unserialize_failure';
+    /* flag for data that cannot be unserialized */
+    const UNSERIALIZABLE_DATA = 'unserializable_data';
 
     /**
      * Thanks to Jefersson Nathan <malukenho@phpse.net>
@@ -29,18 +30,18 @@ class Session
         if ('' === $encoded) {
             return [];
         }
-        preg_match_all('/(^|;|\})(\w+)\|/i', $encoded, $matchesarray, PREG_OFFSET_CAPTURE);
+        preg_match_all('/(^|;|\})(\w+)\|/i', $encoded, $matchesArray, PREG_OFFSET_CAPTURE);
         $decodedData = [];
         $lastOffset = null;
         $currentKey = '';
-        foreach ($matchesarray[2] as $value) {
+        foreach ($matchesArray[2] as $value) {
             $offset = $value[1];
             if (null !== $lastOffset) {
                 $valueText = substr($encoded, $lastOffset, $offset - $lastOffset);
                 try {
                     $decodedData[$currentKey] = unserialize($valueText);
                 } catch (\Throwable $e) {
-                    $decodedData[$currentKey] = self::UNSERIALIZE_FAILURE;
+                    $decodedData[$currentKey] = self::UNSERIALIZABLE_DATA;
                 }
             }
             $currentKey = $value[0];
@@ -50,7 +51,7 @@ class Session
         try {
             $decodedData[$currentKey] = unserialize($valueText);
         } catch (\Throwable $e) {
-            $decodedData[$currentKey] = self::UNSERIALIZE_FAILURE;
+            $decodedData[$currentKey] = self::UNSERIALIZABLE_DATA;
         }
         return $decodedData;
     }

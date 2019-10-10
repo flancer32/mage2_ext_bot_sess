@@ -13,7 +13,7 @@ class Response
     public $failures;
     /** @var int session files that were removed (belongs to bots) */
     public $removed;
-    /** @var int session files that can belongs to the customers */
+    /** @var int session files that can belongs to humans */
     public $skipped;
     /** @var int total number of session files processed */
     public $total;

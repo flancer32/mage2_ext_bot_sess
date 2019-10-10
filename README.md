@@ -1,12 +1,21 @@
-# Magento2: prevent session creation for search engines bots and crawlers
+# Magento2: prevent session creation for search engines bots/crawlers and clean up expired sessions for humans
 
 There is a [problem](https://magento.stackexchange.com/questions/18276/magento-generating-aprox-20-session-files-per-minute) with search engines bots and crawlers in Magento - new session is created for each request from the bots. So, there are a lot of "dead" sessions in DB/filesystem when any bot scans Magento pages - each page request creates new session. This module [prevents](https://github.com/flancer32/mage2_ext_bot_sess/blob/master/Plugin/Session/SessionManager.php#L29) session creation for search engines bots and crawlers.
 
+Another problem is that if sessions are stored in DB then Magento does not clean up expired sessions. This module does it.
 
 
 ## DB
 
-Console command to clean up existing bots sessions from DB:
+Magento saves own sessions in DB (`./app/etc/env.php`):
+```php
+  'session' => 
+  array (
+    'save' => 'db',
+  )
+```
+
+Console command to clean up bot's existing sessions & user's expired sessions from DB:
 ```bash
 $ ./bin/magento fl32:botsess:clean
 ```
@@ -15,7 +24,7 @@ $ ./bin/magento fl32:botsess:clean
 
 ## Files
 
-If Magento saves own sessions in filesystem (`./app/etc/env.php`):
+Magento saves own sessions in filesystem (`./app/etc/env.php`):
 ```php
   'session' => 
   array (
@@ -23,7 +32,7 @@ If Magento saves own sessions in filesystem (`./app/etc/env.php`):
   )
 ```
 
-sessions are cleaned up using PHP garbage collector (see `session.gc_maxlifetime`). Magento in this mode cannot control sessions lifetime. Use this route to cleanup files sessions for inactive users: `http://your.shop.com/fl32botsess/clean/files` and [this](./etc/bin/root_cron_clean_files.sh) template to create shell-script for cron.
+Sessions are cleaned up using PHP garbage collector (see `session.gc_maxlifetime`). Magento in this mode cannot control sessions lifetime. Use this route to cleanup files sessions for inactive users: `http://your.shop.com/fl32botsess/clean/files` and [this](./etc/bin/root_cron_clean_files.sh) template to create shell-script for cron.
 
 This is bad solution for bad practice. Don't use files for Magento sessions at all.
 
