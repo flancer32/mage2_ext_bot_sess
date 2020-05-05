@@ -54,7 +54,7 @@ class Clean
         $output->writeln("'{$resp->skipped}' sessions are not defined as bot's.");
         $output->writeln("'{$resp->removedBots}' sessions are deleted as bot's.");
         $output->writeln("'{$resp->removedInactive}' sessions are deleted as inactive users.");
-        $output->writeln("'{$resp->failures}' sessions have a failures during analyze..");
+        $output->writeln("'{$resp->failures}' sessions have a failures during analyze.");
         $output->writeln("'{$resp->active}' sessions are belong to active users.");
         $output->writeln("Command '{$this->getName()}' is executed.");
     }

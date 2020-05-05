@@ -14,7 +14,7 @@
                     <comment>Parts of the User-Agent HTTP header which shows that session should not be created for this
                         agent.
                     </comment>
-                    <tooltip>All parts will be concatenated into one regex "/^alexa|^blitz\.io|...|yandex/i" to lookup for bots.</tooltip>
+                    <tooltip>All parts will be concatenated into one regex "/^alexa|^blitz\.io|...|yandex/i" to lookup for the bots.</tooltip>
                 </field>
                 <field id="bots_cleanup_delta"
                        translate="label" type="text" sortOrder="200" showInDefault="1"

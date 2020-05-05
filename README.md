@@ -4,8 +4,18 @@ There is a [problem](https://magento.stackexchange.com/questions/18276/magento-g
 
 Another problem is that if sessions are stored in DB then Magento does not clean up expired sessions. This module does it.
 
+## Configuration
 
-## DB
+Go to `Stores / Configuration / General / Web / Bots Sessions Settings`:
+
+![Configuration](./docs/img/config.png "Configuration")
+
+* **Bots Signatures**: All parts will be concatenated into one regex "/^alexa|^blitz\.io|...|yandex/i" to lookup for the bots.
+* **Bots Sessions Max Lifetime**: note, that Magento cron runs clean up job [every hour](./etc/crontab.xml).
+
+## Sessions Cleanup
+
+### DB Saved Sessions
 
 Magento saves own sessions in DB (`./app/etc/env.php`):
 ```php
@@ -22,7 +32,7 @@ $ ./bin/magento fl32:botsess:clean
 
 
 
-## Files
+### Filesystem Saved Sessions
 
 Magento saves own sessions in filesystem (`./app/etc/env.php`):
 ```php
@@ -37,7 +47,9 @@ Sessions are cleaned up using PHP garbage collector (see `session.gc_maxlifetime
 This is bad solution for bad practice. Don't use files for Magento sessions at all.
 
 
+## Logging
 
+See logs in `MAGENTO_ROOT/var/log/fl32.botsess.log`.
 
 ## Install
 
