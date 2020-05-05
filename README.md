@@ -4,6 +4,16 @@ There is a [problem](https://magento.stackexchange.com/questions/18276/magento-g
 
 Another problem is that Magento does not clean up user's expired sessions if sessions are stored in DB. This module [does it](https://github.com/flancer32/mage2_ext_bot_sess/blob/master/Service/Clean.php#L125).
 
+* [Configuration](#configuration)
+* [Prevent the Sessions Creation](#prevent-the-sessions-creation)
+* [Sessions Cleanup](#sessions-cleanup)
+  * [DB Sessions](#db-sessions)
+  * [Filesystem Sessions](#filesystem-sessions)
+* [Logging](#logging)
+* [User-Agents Analysis](#user-agents-analysis)
+* [Install](#install)
+* [Uninstall](#uninstall)
+
 
 
 ## Configuration
@@ -14,6 +24,10 @@ Go to `Stores / Configuration / General / Web / Bots Sessions Settings`:
 
 * **Bots Signatures**: All parts will be concatenated into one regex "/^alexa|^blitz\.io|...|yandex/i" to lookup for the bots.
 * **Bots Sessions Max Lifetime**: note, that Magento cron runs clean up job [every hour](./etc/crontab.xml).
+
+
+## Prevent the Sessions Creation
+This activity is independent of session storage (redis, db, files, ...) and available immediately after installation. Magento will not create new session if `User-Agent` HTTP header of the visitor will be filtered with `Bots Signatures` configuration option. 
 
 
 
@@ -58,8 +72,31 @@ PHP garbage collector cleans up the sessions (see `session.gc_maxlifetime`). Mag
 
 
 ## Logging
-See logs in `MAGENTO_ROOT/var/log/fl32.botsess.log`.
+See logs for module's activities in `MAGENTO_ROOT/var/log/fl32.botsess.log`.
 
+
+
+## User-Agents Analysis
+If Magento saves sessions in DB then you can get list of user agents for active sessions after CLI cleanup:
+
+```shell script
+$ ./bin/magento fl32:botsess:clean
+Command 'fl32:botsess:clean' is started.
+1: Mozilla/5.0 (Linux; Android 8.1.0; DRA-LX5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Mobile Safari/537.36
+...
+1583: Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Mobile/15E148 Safari/604.1
+2439: Re-re Studio (+http://2re.site/)
+9138: 1C+Enterprise/8.3
+Total '50501' sessions are found in DB.
+'0' sessions are not defined as bot's.
+'0' sessions are deleted as bot's.
+'170' sessions are deleted as inactive users.
+'0' sessions have a failures during analyze.
+'50331' sessions are belong to active users.
+Command 'fl32:botsess:clean' is executed.
+```
+
+So, `2439: Re-re Studio (+http://2re.site/)` means that user agent named `Re-re Studio (+http://2re.site/)` was used in 2439 saved sessions. 
 
 
 ## Install

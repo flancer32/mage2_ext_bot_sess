@@ -26,7 +26,8 @@ postrank
 slurp
 spider
 uptime
-yandex</filter>
+yandex
+zabbix</filter>
                 <bots_cleanup_delta>3600</bots_cleanup_delta>
             </session_bots>
         </web>
