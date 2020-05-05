@@ -14,20 +14,23 @@ namespace Flancer32\BotSess\Helper;
  */
 class Filter
 {
-    /** @var bool cached isBot result based on HTTP var (for current request) */
-    private $cacheIsBot = null;
-    /**
-     * Regex with bots signatures.
-     *
-     * @var string
-     */
+    /** @var bool cached `isBot` result based on HTTP headers (for current request) */
+    private $cacheIsBot;
+
+    /** @var string Regex with bots signatures */
     private $regex;
 
     public function __construct(
         \Flancer32\BotSess\Helper\Config $hlpCfg
-    )
-    {
+    ) {
         $this->regex = $hlpCfg->getFilter();
+    }
+
+    /**
+     * Analyse HTTP headers and cache the result.
+     */
+    private function analyzeHttpHeaders()
+    {
         /** Analyze HTTP request var to cache isBot result */
         $userAgent = empty($_SERVER['HTTP_USER_AGENT']) ? null : $_SERVER['HTTP_USER_AGENT'];
         $this->cacheIsBot = $this->isBotAgentMatched($userAgent);
@@ -44,6 +47,9 @@ class Filter
     {
         if ($userAgent) {
             $result = $this->isBotAgentMatched($userAgent);
+        } elseif (is_null($this->cacheIsBot)) {
+            $this->analyzeHttpHeaders();
+            $result = $this->cacheIsBot;
         } else {
             $result = $this->cacheIsBot;
         }

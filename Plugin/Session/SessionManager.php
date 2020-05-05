@@ -29,14 +29,20 @@ class SessionManager
         \Closure $proceed
     ) {
         $result = $subject;
-        $isBot = $this->hlp->isBot();
-        if (!$isBot) {
-            /* not bot - proceed with session start */
-            $result = $proceed();
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            /* filter HTTP requests only */
+            $isBot = $this->hlp->isBot();
+            if (!$isBot) {
+                /* proceed with session start */
+                $result = $proceed();
+            } else {
+                $agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'n/a';
+                $address = $_SERVER['REMOTE_ADDR'];
+                $this->logger->debug("Skip session for agent |$agent| from $address.");
+            }
         } else {
-            $agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'n/a';
-            $address = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'n/a';
-            $this->logger->debug("Skip session for agent |$agent| from $address.");
+            /* process CLI & cron requests */
+            $result = $proceed();
         }
         return $result;
     }

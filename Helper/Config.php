@@ -46,7 +46,7 @@ class Config
         $result = $this->scopeConfig->getValue('web/cookie/cookie_lifetime');
         $result = filter_var($result, FILTER_VALIDATE_INT);
         if ($result <= 0) {
-            $result = self::DEF_BOT_CLEANUP_DELTA;
+            $result = self::DEF_COOKIE_LIFETIME;
         }
         return $result;
     }
