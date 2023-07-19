@@ -6,10 +6,13 @@
   "license": "GPL-3.0-only",
   "authors": [
     {
-      "name": "Alex Gusev", "email": "alex@flancer64.com"
+      "name": "Alex Gusev",
+      "email": "alex@flancer64.com"
     }
   ],
-  "require": {},
+  "require": {
+    "php": "~7.4.0|~8.0"
+  },
   "autoload": {
     "files": [
       "registration.php"
