@@ -14,7 +14,7 @@ class ConfigTest
     /** @var \Flancer32\BotSess\Helper\Config */
     private $obj;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         /** Get object to test */
         $obm = \Magento\Framework\App\ObjectManager::getInstance();
